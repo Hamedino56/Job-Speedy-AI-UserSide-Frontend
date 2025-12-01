@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS admin_users (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+
 -- Regular users table
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
