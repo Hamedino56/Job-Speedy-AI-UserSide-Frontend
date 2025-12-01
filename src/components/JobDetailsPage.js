@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { FaArrowLeft } from "react-icons/fa";
 import Navbar from "./Navbar";
+import API_BASE_URL from "../config";
 
 const JobDetailsPage = () => {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ const JobDetailsPage = () => {
     (async () => {
       setLoading(true);
       try {
-        const res = await fetch(`http://localhost:4000/api/jobs/${id}`);
+        const res = await fetch(`${API_BASE_URL}/api/jobs/${id}`);
         if (!res.ok) throw new Error('Job not found');
         const data = await res.json();
         setJob(data.job);

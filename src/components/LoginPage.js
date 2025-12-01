@@ -3,6 +3,7 @@ import backgroundImg from "../assets/background.png";
 import waveImg from "../assets/wave.png";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
+import API_BASE_URL from "../config";
 
 const LoginPage = () => {
   const { t, i18n } = useTranslation();
@@ -43,7 +44,7 @@ const LoginPage = () => {
     }
     setFpLoading(true);
     try {
-      const res = await fetch("http://localhost:4000/api/auth/forgot-password", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: fpEmail, newPassword: fpNewPassword })
@@ -66,7 +67,7 @@ const LoginPage = () => {
     setError("");
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:4000/api/auth/login", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

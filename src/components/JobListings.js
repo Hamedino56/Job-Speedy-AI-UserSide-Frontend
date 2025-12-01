@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import Navbar from "./Navbar";
+import API_BASE_URL from "../config";
 
 const JobListingsPage = () => {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ const JobListingsPage = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('http://localhost:4000/api/jobs/filters');
+        const res = await fetch(`${API_BASE_URL}/api/jobs/filters`);
         const data = await res.json();
         setFilters({ types: data.types || [], categories: data.categories || [], languages: data.languages || [], locations: data.locations || [] });
       } catch (_) {}
@@ -37,7 +38,7 @@ const JobListingsPage = () => {
         if (type) params.set('type', type);
         if (category) params.set('category', category);
         // language filter removed
-        const res = await fetch(`http://localhost:4000/api/jobs?${params.toString()}`);
+        const res = await fetch(`${API_BASE_URL}/api/jobs?${params.toString()}`);
         const data = await res.json();
         setJobs(data.jobs || []);
       } catch (_) {
