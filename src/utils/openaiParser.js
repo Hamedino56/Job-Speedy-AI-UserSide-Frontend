@@ -1,6 +1,3 @@
-// OpenAI API Key from environment
-const OPENAI_API_KEY = process.env.REACT_APP_OPENAI_API_KEY;
-
 // Import Tesseract.js for OCR fallback
 import { createWorker } from 'tesseract.js';
 
@@ -9,6 +6,9 @@ import mammoth from 'mammoth';
 
 // Import pdfjs-dist for PDF parsing
 import * as pdfjsLib from 'pdfjs-dist';
+
+// OpenAI API Key from environment
+const OPENAI_API_KEY = process.env.REACT_APP_OPENAI_API_KEY;
 
 // Initialize PDF.js worker - use reliable CDN
 if (typeof window !== 'undefined') {
