@@ -44,7 +44,7 @@ const LoginPage = () => {
     }
     setFpLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: fpEmail, newPassword: fpNewPassword })
@@ -67,7 +67,8 @@ const LoginPage = () => {
     setError("");
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      // Use user login endpoint from deployed backend
+      const res = await fetch(`${API_BASE_URL}/api/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -77,15 +78,19 @@ const LoginPage = () => {
         throw new Error(err.error || "Login failed");
       }
       const data = await res.json();
-      // Mark authenticated so navbar and upload gate recognize login
+      // Store JWT + user metadata for later authenticated calls
       try {
-        localStorage.setItem('isAuthenticated', 'true');
-        if (data && data.user) {
-          if (data.user.id) localStorage.setItem('userId', String(data.user.id));
-          if (data.user.email) localStorage.setItem('userEmail', String(data.user.email));
-          if (data.user.fullName) localStorage.setItem('userFullName', String(data.user.fullName));
+        if (data.token) {
+          localStorage.setItem("authToken", data.token);
         }
-        window.dispatchEvent(new Event('storage'));
+        const user = data.user || data.data || {};
+        localStorage.setItem("isAuthenticated", "true");
+        if (user.id) localStorage.setItem("userId", String(user.id));
+        if (user.email) localStorage.setItem("userEmail", String(user.email));
+        if (user.full_name || user.fullName) {
+          localStorage.setItem("userFullName", String(user.full_name || user.fullName));
+        }
+        window.dispatchEvent(new Event("storage"));
       } catch (_) {}
       // Navigate to home (admin pages were removed in this build)
       navigate("/");

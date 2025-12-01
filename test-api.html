@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test OpenAI API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        input[type="file"] {
+            margin: 20px 0;
+            padding: 10px;
+            border: 2px dashed #ddd;
+            border-radius: 5px;
+            width: 100%;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        .error {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+        .success {
+            border-left-color: #4CAF50;
+            background: #e8f5e9;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .status.success { background: #4CAF50; color: white; }
+        .status.error { background: #f44336; color: white; }
+        .status.warning { background: #ff9800; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test OpenAI API on Deployed Server</h1>
+        <p>This page tests if your deployed server has OpenAI configured correctly.</p>
+        
+        <div>
+            <label><strong>Select PDF Resume:</strong></label>
+            <input type="file" id="pdfFile" accept="application/pdf" />
+        </div>
+        
+        <div>
+            <button onclick="testParseResume()" id="btnParse">Test /api/applicants</button>
+            <button onclick="testApplicants()" id="btnApplicants">Test /api/applicants</button>
+            <button onclick="testHealth()" id="btnHealth">Test /api/health</button>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://ai-jobs-posting-w5yb.vercel.app';
+
+        function showResult(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            const statusClass = type === 'success' ? 'success' : type === 'error' ? 'error' : '';
+            const statusText = type === 'success' ? '✅ SUCCESS' : type === 'error' ? '❌ ERROR' : '⚠️ WARNING';
+            const statusClass2 = type === 'success' ? 'success' : type === 'error' ? 'error' : 'warning';
+            
+            resultDiv.innerHTML = `
+                <div class="result ${statusClass}">
+                    <span class="status ${statusClass2}">${statusText}</span>
+                    <pre>${message}</pre>
+                </div>
+            `;
+        }
+
+        async function testParseResume() {
+            const fileInput = document.getElementById('pdfFile');
+            const btn = document.getElementById('btnParse');
+            
+            if (!fileInput.files[0]) {
+                showResult('Please select a PDF file first!', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Testing...';
+            showResult('Testing /api/applicants endpoint (resume parsing)...', 'info');
+
+            try {
+                const form = new FormData();
+                form.append('resume', fileInput.files[0]);
+                form.append('name', 'Test User');
+                form.append('email', 'test@example.com');
+                form.append('phone', '+1234567890');
+
+                const res = await fetch(`${API_BASE_URL}/api/applicants`, {
+                    method: 'POST',
+                    body: form,
+                });
+
+                const data = await res.json();
+                
+                if (res.ok) {
+                    const hasSkills = data.skills && data.skills.length > 0;
+                    const hasExperience = data.experience && data.experience.length > 0;
+                    const hasEducation = data.education && data.education.trim() !== '';
+                    
+                    if (hasSkills || hasExperience || hasEducation) {
+                        showResult(`✅ OpenAI is WORKING!\n\nResponse:\n${JSON.stringify(data, null, 2)}\n\n✅ Applicant ID: ${data.id || data.applicantId || 'N/A'}\n✅ Skills: ${data.skills?.length || 0} found\n✅ Experience: ${data.experience?.length || 0} entries\n✅ Education: ${data.education ? 'Found' : 'Not found'}\n✅ Classification: ${data.classification || 'N/A'}`, 'success');
+                    } else {
+                        showResult(`⚠️ Server responded but NO parsed data returned.\n\nThis means OpenAI API key is likely NOT configured on the server.\n\nResponse:\n${JSON.stringify(data, null, 2)}\n\n❌ Skills: Empty\n❌ Experience: Empty\n❌ Education: Empty\n\nPlease add OPENAI_API_KEY to your Vercel environment variables.`, 'error');
+                    }
+                } else {
+                    showResult(`❌ Error: ${res.status} ${res.statusText}\n\n${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}\n\nMake sure:\n1. The server is deployed and running\n2. CORS is enabled\n3. The endpoint exists`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Test /api/applicants';
+            }
+        }
+
+        async function testApplicants() {
+            const fileInput = document.getElementById('pdfFile');
+            const btn = document.getElementById('btnApplicants');
+            
+            if (!fileInput.files[0]) {
+                showResult('Please select a PDF file first!', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Testing...';
+            showResult('Testing /api/applicants endpoint...', 'info');
+
+            try {
+                const form = new FormData();
+                form.append('resume', fileInput.files[0]);
+                form.append('name', 'Test User');
+                form.append('email', 'test@example.com');
+                form.append('phone', '+1234567890');
+
+                const res = await fetch(`${API_BASE_URL}/api/applicants`, {
+                    method: 'POST',
+                    body: form,
+                });
+
+                const data = await res.json();
+                
+                if (res.ok) {
+                    const hasSkills = data.skills && data.skills.length > 0;
+                    const hasExperience = data.experience && data.experience.length > 0;
+                    const hasEducation = data.education && data.education.trim() !== '';
+                    
+                    if (hasSkills || hasExperience || hasEducation) {
+                        showResult(`✅ OpenAI is WORKING via /api/applicants!\n\nResponse:\n${JSON.stringify(data, null, 2)}\n\n✅ Applicant ID: ${data.id || data.applicantId || 'N/A'}\n✅ Skills: ${data.skills?.length || 0} found\n✅ Experience: ${data.experience?.length || 0} entries\n✅ Education: ${data.education ? 'Found' : 'Not found'}`, 'success');
+                    } else {
+                        showResult(`⚠️ Server responded but NO parsed data.\n\nResponse:\n${JSON.stringify(data, null, 2)}\n\n❌ OpenAI might not be configured.`, 'error');
+                    }
+                } else {
+                    showResult(`❌ Error: ${res.status} ${res.statusText}\n\n${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Test /api/applicants';
+            }
+        }
+
+        async function testHealth() {
+            const btn = document.getElementById('btnHealth');
+            btn.disabled = true;
+            btn.textContent = 'Testing...';
+            showResult('Testing /api/health endpoint...', 'info');
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/health`);
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showResult(`✅ Server is healthy!\n\n${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    showResult(`❌ Health check failed: ${res.status}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Test /api/health';
+            }
+        }
+    </script>
+</body>
+</html>
+

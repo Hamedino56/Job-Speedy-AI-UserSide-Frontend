@@ -3,6 +3,7 @@ import backgroundImg from "../assets/background.png";
 import waveImg from "../assets/wave.png";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
+import API_BASE_URL from "../config";
 
 const RegisterPage = () => {
   const { t, i18n } = useTranslation();
@@ -34,25 +35,29 @@ const RegisterPage = () => {
     setError("");
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:4000/api/auth/register", {
+      const res = await fetch(`${API_BASE_URL}/api/users/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullName, email, password }),
+        body: JSON.stringify({ full_name: fullName, email, password }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "Registration failed" }));
         throw new Error(err.error || "Registration failed");
       }
       const data = await res.json();
-      // Consider the user signed in immediately after successful registration
+      // New backend returns a JWT token for user auth
       try {
-        localStorage.setItem('isAuthenticated', 'true');
-        if (data && data.user) {
-          if (data.user.id) localStorage.setItem('userId', String(data.user.id));
-          if (data.user.email) localStorage.setItem('userEmail', String(data.user.email));
-          if (data.user.fullName) localStorage.setItem('userFullName', String(data.user.fullName));
+        if (data.token) {
+          localStorage.setItem("authToken", data.token);
         }
-        window.dispatchEvent(new Event('storage'));
+        const user = data.user || data.data || {};
+        localStorage.setItem("isAuthenticated", "true");
+        if (user.id) localStorage.setItem("userId", String(user.id));
+        if (user.email) localStorage.setItem("userEmail", String(user.email));
+        if (user.full_name || user.fullName) {
+          localStorage.setItem("userFullName", String(user.full_name || user.fullName));
+        }
+        window.dispatchEvent(new Event("storage"));
       } catch (_) {}
       navigate("/");
     } catch (e) {

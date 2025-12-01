@@ -1,7 +1,7 @@
 // API Configuration
-// Set this to your deployed backend URL when deploying to Vercel
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+// Always use deployed backend API
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL ||
+  "https://ai-jobs-posting-w5yb.vercel.app";
 
 export default API_BASE_URL;
-
-
