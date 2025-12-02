@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import backgroundImg from "../assets/background.png";
 import waveImg from "../assets/wave.png";
+import logoImg from "../assets/Jobspeedy_logo.png";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import API_BASE_URL from "../config";
@@ -139,7 +140,15 @@ const LoginPage = () => {
 
       {/* Left Side */}
       <div style={styles.leftSection}>
-        <h1 style={styles.logoBrand}>JOBspeedy AI</h1>
+        <img
+          src={logoImg}
+          alt="JOBspeedy AI"
+          style={{
+            height: "100px",
+            marginBottom: "20px",
+            objectFit: "contain",
+          }}
+        />
         <p style={styles.quote}>
           AI DOES'NT JUST FIND JOBS IT FINDS THE RIGHT ONES FOR YOU.
         </p>
