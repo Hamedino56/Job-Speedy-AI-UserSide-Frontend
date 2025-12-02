@@ -10,17 +10,17 @@ import * as pdfjsLib from 'pdfjs-dist';
 // OpenAI API Key from environment
 const OPENAI_API_KEY = process.env.REACT_APP_OPENAI_API_KEY;
 
-// Initialize PDF.js worker - use reliable CDN
+// PDF.js worker is now configured in src/pdfWorker.js
+// The worker is automatically configured when pdfWorker.js is imported in index.js
+// This ensures the worker uses a CDN with proper CORS support (jsdelivr instead of unpkg)
 if (typeof window !== 'undefined') {
-  // For pdfjs-dist 5.4.449, use .js extension (not .mjs)
-  // Try unpkg CDN first
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
-  
-  // Alternative CDN options (uncomment if unpkg doesn't work):
-  // pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
-  // pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-  
-  console.log(`PDF.js worker initialized: ${pdfjsLib.GlobalWorkerOptions.workerSrc}`);
+  // Worker should already be configured by pdfWorker.js
+  // Just log the current configuration for debugging
+  if (pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    console.log(`PDF.js worker source: ${pdfjsLib.GlobalWorkerOptions.workerSrc}`);
+  } else {
+    console.warn("PDF.js worker not configured! Make sure pdfWorker.js is imported in index.js");
+  }
   console.log(`PDF.js version: ${pdfjsLib.version}`);
 }
 
@@ -585,49 +585,109 @@ async function extractTextFromPDFBuffer(arrayBuffer) {
   let pdf = null;
   
   try {
-    console.log("Extracting text from PDF using pdfjs-dist...");
-    console.log(`PDF.js version: ${pdfjsLib.version}`);
-    console.log(`Worker source: ${pdfjsLib.GlobalWorkerOptions.workerSrc}`);
-    
-    // Check if worker is configured
-    if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-      console.warn("PDF.js worker not configured, attempting to configure...");
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+    // Validate arrayBuffer first (critical check - PDFs are binary, not text)
+    if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+      throw new Error("PDF file is empty or corrupted. Please ensure the file was uploaded correctly.");
     }
     
-    // Use pdfjs-dist for proper text extraction
+    console.log(`Extracting text from PDF using pdfjs-dist...`);
+    console.log(`PDF file size: ${arrayBuffer.byteLength} bytes`);
+    console.log(`PDF.js version: ${pdfjsLib.version}`);
+    
+    // Initialize worker with multiple fallback CDNs (prevents crashes from CDN failures)
+    if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      console.log("Configuring PDF.js worker...");
+      const workerCDNs = [
+        `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`,
+        `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`,
+        `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+      ];
+      pdfjsLib.GlobalWorkerOptions.workerSrc = workerCDNs[0];
+      console.log(`Worker source: ${pdfjsLib.GlobalWorkerOptions.workerSrc}`);
+    }
+    
+    // Ensure arrayBuffer is properly formatted (PDFs must be read as binary/buffer)
+    let pdfData = arrayBuffer;
+    if (!(arrayBuffer instanceof ArrayBuffer)) {
+      // Convert to ArrayBuffer if needed
+      if (arrayBuffer instanceof Uint8Array) {
+        pdfData = arrayBuffer.buffer;
+      } else {
+        throw new Error("Invalid PDF data format. PDF must be read as binary buffer.");
+      }
+    }
+    
+    // Use pdfjs-dist for proper text extraction with error handling
     const loadingTask = pdfjsLib.getDocument({ 
-      data: arrayBuffer,
+      data: pdfData,
       verbosity: 0, // Suppress warnings
-      useSystemFonts: true // Use system fonts for better compatibility
+      useSystemFonts: true, // Use system fonts for better compatibility
+      stopAtErrors: false, // Continue processing even if some pages have errors
+      maxImageSize: 1024 * 1024, // Limit image size to prevent memory issues
+      isEvalSupported: false // Disable eval for security
     });
     
-    pdf = await loadingTask.promise;
+    // Add timeout to prevent hanging (30 seconds max)
+    const loadTimeout = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error("PDF loading timeout. The file may be too large or corrupted.")), 30000)
+    );
+    
+    pdf = await Promise.race([
+      loadingTask.promise,
+      loadTimeout
+    ]);
     let fullText = '';
 
-    console.log(`PDF loaded successfully. Has ${pdf.numPages} pages`);
+    if (!pdf || !pdf.numPages || pdf.numPages === 0) {
+      throw new Error("PDF file appears to be empty or invalid. Please verify the file is a valid PDF.");
+    }
+    
+    console.log(`PDF loaded successfully. Has ${pdf.numPages} page(s)`);
 
     // Extract text from all pages (limit to first 10 pages for performance)
     const maxPages = Math.min(pdf.numPages, 10);
+    let pagesWithText = 0;
+    
     for (let i = 1; i <= maxPages; i++) {
       try {
         const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
+        
+        // Get text content with proper error handling
+        const textContent = await page.getTextContent({
+          normalizeWhitespace: true, // Normalize whitespace for better extraction
+          disableCombineTextItems: false // Combine text items for better results
+        });
+        
+        // Extract text from items - handle both str and transform properties
         const pageText = textContent.items
-          .map(item => item.str || '')
-          .filter(str => str.trim().length > 0)
+          .map(item => {
+            // Handle different text item formats
+            if (typeof item === 'string') return item;
+            if (item.str) return item.str;
+            if (item.text) return item.text;
+            return '';
+          })
+          .filter(str => str && str.trim().length > 0)
           .join(' ')
           .trim();
         
         if (pageText.length > 0) {
           fullText += pageText + '\n\n';
+          pagesWithText++;
           console.log(`Page ${i}: Extracted ${pageText.length} characters`);
         } else {
-          console.warn(`Page ${i}: No text found (might be image-based)`);
+          console.warn(`Page ${i}: No text found (might be image-based or scanned PDF)`);
         }
       } catch (pageError) {
-        console.warn(`Error extracting text from page ${i}:`, pageError);
+        console.warn(`Error extracting text from page ${i}:`, pageError.message || pageError);
+        // Continue to next page instead of crashing
+        continue;
       }
+    }
+    
+    // Validate we got text from at least one page
+    if (pagesWithText === 0 && maxPages > 0) {
+      console.warn("No text extracted from any page. PDF may be image-based (scanned).");
     }
 
     if (fullText.trim().length > 50) {
@@ -638,25 +698,30 @@ async function extractTextFromPDFBuffer(arrayBuffer) {
     console.warn(`PDF.js extraction returned insufficient text (${fullText.trim().length} chars), trying OCR...`);
 
     // Try OCR as fallback for image-based PDFs (only if we have a valid PDF object)
-    if (pdf) {
+    if (pdf && pdf.numPages > 0) {
       console.log("PDF.js text extraction insufficient, trying OCR with Tesseract.js...");
       try {
+        // Use the original arrayBuffer for OCR
         const ocrText = await performOCR(arrayBuffer);
         if (ocrText && ocrText.trim().length > 50) {
           console.log(`OCR extraction successful: ${ocrText.length} characters`);
-          return ocrText;
+          return ocrText.substring(0, 8000);
         }
       } catch (ocrError) {
-        console.error("OCR also failed:", ocrError);
+        console.error("OCR also failed:", ocrError.message || ocrError);
+        // Don't throw - continue to next fallback method
       }
     } else {
       console.warn("PDF object not available, skipping OCR fallback");
     }
 
     // Enhanced fallback: Try multiple extraction methods
-    console.log("PDF.js failed, using enhanced fallback text extraction");
-    const uint8Array = new Uint8Array(arrayBuffer);
-    const rawText = new TextDecoder('utf-8', { fatal: false }).decode(uint8Array);
+    // Only use this if PDF.js completely failed (not just insufficient text)
+    if (fullText.trim().length === 0) {
+      console.log("PDF.js returned no text, using enhanced fallback text extraction");
+      try {
+        const uint8Array = new Uint8Array(arrayBuffer);
+        const rawText = new TextDecoder('utf-8', { fatal: false }).decode(uint8Array);
 
     // Method 1: Look for text in PDF streams (TJ and Tj operators)
     const tjMatches = rawText.match(/\/F\d+\s+\d+\s+Tf[\s\S]*?TJ|\/F\d+\s+\d+\s+Tf[\s\S]*?Tj/gi);
@@ -727,20 +792,32 @@ async function extractTextFromPDFBuffer(arrayBuffer) {
     // Combine and deduplicate extracted text
     const combinedText = [...new Set(textMatches)].join(' ').substring(0, 8000);
 
-    if (combinedText.trim().length > 100) {
-      console.log(`Enhanced fallback extraction: ${combinedText.length} characters`);
-      return combinedText;
+        if (combinedText.trim().length > 100) {
+          console.log(`Enhanced fallback extraction: ${combinedText.length} characters`);
+          return combinedText;
+        }
+      } catch (fallbackError) {
+        console.error("Enhanced fallback extraction failed:", fallbackError.message || fallbackError);
+        // Continue to next method
+      }
     }
 
     // If all methods fail, try to send PDF pages as images to OpenAI Vision API
-    console.log("All text extraction methods failed, attempting direct PDF processing with OpenAI Vision API");
-    try {
-      // Use existing PDF object if available, otherwise load it
-      let pdfForVision = pdf;
-      if (!pdfForVision) {
-        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-        pdfForVision = await loadingTask.promise;
-      }
+    // This handles scanned PDFs and image-based PDFs
+    if (fullText.trim().length < 50) {
+      console.log("All text extraction methods failed, attempting direct PDF processing with OpenAI Vision API");
+      try {
+        // Use existing PDF object if available, otherwise load it
+        let pdfForVision = pdf;
+        if (!pdfForVision || !pdfForVision.numPages) {
+          console.log("Reloading PDF for Vision API processing...");
+          const loadingTask = pdfjsLib.getDocument({ 
+            data: arrayBuffer,
+            verbosity: 0,
+            stopAtErrors: false
+          });
+          pdfForVision = await loadingTask.promise;
+        }
       
       const maxPages = Math.min(pdfForVision.numPages, 3); // Limit to first 3 pages for API limits
       console.log(`Attempting OpenAI Vision extraction for ${maxPages} pages...`);
@@ -814,14 +891,16 @@ async function extractTextFromPDFBuffer(arrayBuffer) {
         }
       }
 
-      if (allPageText.trim().length > 50) {
-        console.log(`OpenAI Vision extraction successful: ${allPageText.length} characters`);
-        return allPageText.substring(0, 8000);
-      } else {
-        console.warn(`OpenAI Vision extraction returned insufficient text: ${allPageText.trim().length} characters`);
+        if (allPageText.trim().length > 50) {
+          console.log(`OpenAI Vision extraction successful: ${allPageText.length} characters`);
+          return allPageText.substring(0, 8000);
+        } else {
+          console.warn(`OpenAI Vision extraction returned insufficient text: ${allPageText.trim().length} characters`);
+        }
+      } catch (visionError) {
+        console.error("OpenAI Vision processing failed:", visionError.message || visionError);
+        // Don't throw - continue to final error message
       }
-    } catch (visionError) {
-      console.error("OpenAI Vision processing failed:", visionError);
     }
 
     // Final fallback: throw a helpful error
@@ -830,7 +909,7 @@ async function extractTextFromPDFBuffer(arrayBuffer) {
     console.error("PDF extraction error:", error);
     console.error("Error details:", {
       message: error.message,
-      stack: error.stack,
+      stack: error.stack?.substring(0, 500), // Limit stack trace length
       name: error.name
     });
     
@@ -839,20 +918,32 @@ async function extractTextFromPDFBuffer(arrayBuffer) {
       throw error;
     }
     
-    // Provide more specific error messages
-    if (error.message && (error.message.includes('worker') || error.message.includes('Failed to fetch'))) {
-      throw new Error("PDF.js worker failed to load. Please refresh the page and try again. If the problem persists, try using a DOCX file instead.");
-    } else if (error.message && (error.message.includes('Invalid PDF') || error.message.includes('corrupted'))) {
+    // Provide more specific error messages based on error type
+    const errorMsg = error.message || 'Unknown error';
+    
+    // Handle worker loading errors
+    if (errorMsg.includes('worker') || errorMsg.includes('Failed to fetch') || errorMsg.includes('NetworkError')) {
+      throw new Error("PDF.js worker failed to load. Please check your internet connection and refresh the page. If the problem persists, try using a DOCX file instead.");
+    } 
+    // Handle invalid/corrupted PDF errors
+    else if (errorMsg.includes('Invalid PDF') || errorMsg.includes('corrupted') || errorMsg.includes('Invalid') || errorMsg.includes('empty')) {
       throw new Error("The PDF file appears to be corrupted or invalid. Please try: 1) Opening the PDF in a PDF viewer to verify it's valid, 2) Re-saving it, or 3) Converting to DOCX format.");
-    } else if (error.message && error.message.includes('password')) {
+    } 
+    // Handle password-protected PDFs
+    else if (errorMsg.includes('password') || errorMsg.includes('encrypted')) {
       throw new Error("The PDF is password-protected. Please remove the password and try again.");
-    } else {
-      // Don't wrap the error message again if it's already helpful
-      const errorMsg = error.message || 'Unknown error';
-      if (errorMsg.includes('Could not extract') || errorMsg.includes('insufficient')) {
-        throw error;
-      }
-      throw new Error(`PDF extraction failed: ${errorMsg}. Please try converting the PDF to DOCX format or ensure it contains readable text (not just images).`);
+    }
+    // Handle timeout errors
+    else if (errorMsg.includes('timeout') || errorMsg.includes('too large')) {
+      throw new Error("PDF processing timed out. The file may be too large. Please try: 1) Using a smaller PDF file, 2) Splitting the PDF into smaller files, or 3) Converting to DOCX format.");
+    }
+    // Handle already helpful error messages
+    else if (errorMsg.includes('Could not extract') || errorMsg.includes('insufficient') || errorMsg.includes('Please try')) {
+      throw error;
+    } 
+    // Generic error with helpful suggestions
+    else {
+      throw new Error(`PDF extraction failed: ${errorMsg}. Please try: 1) Converting the PDF to DOCX format, 2) Ensuring the PDF contains readable text (not just images), or 3) Re-saving the PDF file.`);
     }
   }
 }

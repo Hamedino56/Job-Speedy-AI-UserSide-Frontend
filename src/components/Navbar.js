@@ -29,12 +29,12 @@ const Navbar = () => {
   const navItems = isAuth ? [t("Home"), t("Jobs"), t("About")] : [t("Home"), t("Jobs"), t("About"), t("Login")];
 
   return (
-    <nav className="flex justify-between items-center px-10 py-5 bg-white/90 backdrop-blur-md shadow-md fixed w-full top-0 z-50">
+    <nav className="flex justify-between items-center px-4 py-2 bg-white/90 backdrop-blur-md shadow-md fixed w-full top-0 z-50">
       <img
         src={logoImg}
         alt="JOBspeedy AI"
         style={{
-          height: "100px",
+          height: "50px",
           cursor: "pointer",
           objectFit: "contain",
         }}
