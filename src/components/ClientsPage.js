@@ -65,30 +65,30 @@ const ClientsPage = () => {
   return (
     <Layout>
       <>
-                <div style={styles.headerRow}>
-                  <h2 style={styles.mainHeader}>{t(language, 'clients.title')}</h2>
-                  <button style={styles.addBtn} onClick={() => { setEditing(null); setFormData({ company: "", contact_person: "", email: "" }); setShowForm(true); }}>
-                    + {t(language, 'clients.addClient')}
-                  </button>
-                </div>
+        <div style={styles.headerRow}>
+          <h2 style={styles.mainHeader}>{t(language, 'clients.title')}</h2>
+          <button style={styles.addBtn} onClick={() => { setEditing(null); setFormData({ company: "", contact_person: "", email: "" }); setShowForm(true); }}>
+            + {t(language, 'clients.addClient')}
+          </button>
+        </div>
 
-                {/* Search aligned to the right half */}
-                <div style={styles.searchRow}>
-                  <div style={styles.searchGroup}>
-                    <input
-                      type="text"
-                      placeholder={language === 'de' ? 'Nach Unternehmen, Kontakt oder E-Mail suchen...' : 'Search by company, contact, or email...'}
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
-                      style={styles.searchInput}
-                    />
-                    <button style={styles.searchBtn} onClick={() => setSearch(search)}>{t(language, 'clients.search')}</button>
-                  </div>
-                </div>
+        {/* Search aligned to the right half */}
+        <div style={styles.searchRow}>
+          <div style={styles.searchGroup}>
+            <input
+              type="text"
+              placeholder={language === 'de' ? 'Nach Unternehmen, Kontakt oder E-Mail suchen...' : 'Search by company, contact, or email...'}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+              style={styles.searchInput}
+            />
+            <button style={styles.searchBtn} onClick={() => setSearch(search)}>{t(language, 'clients.search')}</button>
+          </div>
+        </div>
 
         {/* Add Client Form */}
-                {showForm && (
+        {showForm && (
           <div style={styles.formContainer}>
             <h3 style={styles.formHeader}>{language === 'de' ? 'Neuen Kunden hinzufügen' : 'Add New Client'}</h3>
             <form onSubmit={handleSubmit}>
@@ -130,7 +130,7 @@ const ClientsPage = () => {
         {/* removed old search bar */}
 
         {/* Clients Table */}
-                <div style={styles.tableContainer}>
+        <div style={styles.tableContainer}>
                   <table style={styles.table}>
                     <thead>
                       <tr style={styles.headerRowStrip}>
@@ -166,7 +166,7 @@ const ClientsPage = () => {
                       ))}
                     </tbody>
                   </table>
-                </div>
+        </div>
       </>
     </Layout>
   );
@@ -177,10 +177,22 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: "20px"
+    marginBottom: "20px",
+    gap: "12px",
+    flexWrap: "wrap",
   },
-  searchRow: { display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' },
-  searchGroup: { display: 'flex', gap: '10px', width: '50%', minWidth: 360 },
+  searchRow: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    marginBottom: '12px'
+  },
+  searchGroup: {
+    display: 'flex',
+    gap: '10px',
+    width: '100%',
+    maxWidth: 520,
+    flexWrap: 'wrap'
+  },
   searchInput: { flex: 1, padding: '10px 12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px' },
   searchBtn: { padding: '10px 16px', borderRadius: '8px', border: 'none', background: '#0477BF', color: '#fff', fontWeight: 600, cursor: 'pointer' },
   mainHeader: { fontSize: "24px", fontWeight: "bold" },
@@ -209,10 +221,12 @@ const styles = {
   formRow: {
     display: "flex",
     gap: "15px",
+    flexWrap: "wrap",
     marginBottom: "15px",
   },
   input: {
     flex: 1,
+    minWidth: 220,
     padding: "10px 15px",
     borderRadius: "8px",
     border: "1px solid #ccc",
@@ -246,7 +260,7 @@ const styles = {
     overflowX: "auto",
     background: "white",
     borderRadius: "12px",
-    padding: "20px",
+    padding: "16px",
     boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
   },
   table: { width: "100%", borderCollapse: "separate", borderSpacing: 0, fontSize: "16px" },

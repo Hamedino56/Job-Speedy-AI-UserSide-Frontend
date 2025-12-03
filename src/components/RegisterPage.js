@@ -228,14 +228,15 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#a9bbd9",
+    backgroundColor: "#f6f7ff",
   },
   formBox: {
-    backgroundColor: "#a9bbd9",
+    backgroundColor: "#ffffff",
     padding: "40px",
-    borderRadius: "8px",
+    borderRadius: "16px",
     width: "350px",
     color: "#1b1b3a",
+    boxShadow: "0 10px 40px rgba(15, 23, 42, 0.12)",
   },
   formTitle: {
     fontSize: "26px",

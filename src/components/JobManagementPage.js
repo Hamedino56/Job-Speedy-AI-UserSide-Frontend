@@ -294,8 +294,12 @@ const JobManagementPage = () => {
               ) : jobs.map((job) => (
                 <tr key={job.id} style={styles.row}>
                   <td style={{...styles.td, width:'30%'}}>
-                    <div style={styles.cellTitle}>{job.title}</div>
-                    <div style={styles.cellSub}>{job.description ? String(job.description).slice(0,96) + (String(job.description).length>96?'…':'') : '—'}</div>
+                    <div style={styles.cellTitle}>
+                      {job.title ? String(job.title).slice(0, 24) + (String(job.title).length > 24 ? "…" : "") : "—"}
+                    </div>
+                    <div style={styles.cellSub}>
+                      {job.description ? String(job.description).slice(0, 80) + (String(job.description).length>80?'…':'') : '—'}
+                    </div>
                   </td>
                   <td style={{...styles.td, width:'15%'}}><span style={styles.badge}>{job.department || job.company || '—'}</span></td>
                   <td style={{...styles.td, width:'13%'}}>{job.location || '—'}</td>
