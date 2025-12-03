@@ -1,14 +1,15 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import waveImg from "../assets/wave.png";
 import { useLanguage } from "../contexts/LanguageContext";
 import { t } from "../utils/i18n";
+import useMediaQuery from "../hooks/useMediaQuery";
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { language, toggleLanguage } = useLanguage();
-  
+
   const getSidebarItems = () => [
     { label: t(language, 'sidebar.dashboard'), key: "dashboard" },
     { label: t(language, 'sidebar.candidates'), key: "candidates" },
@@ -95,17 +96,57 @@ const Layout = ({ children }) => {
     }, 150);
   };
 
+  const isTablet = useMediaQuery("(max-width: 1024px)");
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const [sidebarOpen, setSidebarOpen] = useState(!isTablet);
+
+  useEffect(() => {
+    setSidebarOpen(!isTablet);
+  }, [isTablet]);
+
+  const sidebarStyle = useMemo(() => ({
+    ...styles.sidebar,
+    width: isTablet ? 260 : 220,
+    transform: isTablet
+      ? sidebarOpen
+        ? "translateX(0)"
+        : "translateX(-100%)"
+      : "translateX(0)",
+    position: isTablet ? "fixed" : "fixed",
+    top: "80px",
+    left: 0,
+    zIndex: 1200,
+  }), [isTablet, sidebarOpen]);
+
+  const mainStyle = useMemo(() => ({
+    ...styles.main,
+    marginLeft: isTablet ? 0 : 220,
+    padding: isMobile ? "20px 15px 60px" : "40px",
+  }), [isTablet, isMobile]);
+
   return (
     <div style={styles.page}>
       {/* Top Section with Logo and Navbar */}
       <div style={styles.topSection}>
         {/* Logo */}
-        <div style={styles.logo}>
+        <div style={{ ...styles.logo, justifyContent: isTablet ? "flex-start" : "center", paddingLeft: isTablet ? 20 : 40 }}>
+          {isTablet && (
+            <button
+              type="button"
+              aria-label="Toggle navigation"
+              style={styles.menuBtn}
+              onClick={() => setSidebarOpen((prev) => !prev)}
+            >
+              <span style={styles.menuLine} />
+              <span style={styles.menuLine} />
+              <span style={styles.menuLine} />
+            </button>
+          )}
           <div style={styles.logoText}>JOBspeedy AI</div>
         </div>
         
         {/* Top Navbar */}
-        <nav style={styles.topNavbar}>
+        <nav style={{ ...styles.topNavbar, paddingRight: isMobile ? 16 : 40 }}>
           <div style={styles.topRight}>
             <button 
               style={styles.languageBtn} 
@@ -123,9 +164,9 @@ const Layout = ({ children }) => {
       </div>
 
       {/* Sidebar + Main */}
-      <div style={styles.contentWrapper}>
+      <div style={{ ...styles.contentWrapper, flexDirection: isTablet ? "column" : "row" }}>
         {/* Sidebar */}
-        <div style={styles.sidebar}>
+        <div style={sidebarStyle}>
           {getSidebarItems().map((item) => {
             const routes = {
               "dashboard": "/dashboard",
@@ -166,7 +207,15 @@ const Layout = ({ children }) => {
         </div>
 
         {/* Main Content */}
-        <div style={styles.main}>
+        {isTablet && sidebarOpen && (
+          <div
+            style={styles.overlay}
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Main Content */}
+        <div style={mainStyle}>
           {children}
         </div>
       </div>
@@ -252,6 +301,7 @@ const styles = {
     display: "flex", 
     marginTop: "80px",
     minHeight: "calc(100vh - 80px)",
+    position: "relative",
   },
   sidebar: { 
     width: "220px", 
@@ -260,13 +310,11 @@ const styles = {
     display: "flex", 
     flexDirection: "column", 
     gap: "15px", 
-    position: "fixed",
-    top: "80px",
-    left: 0,
     bottom: 0,
     height: "calc(100vh - 80px)",
     overflowY: "auto",
     boxShadow: "2px 0 8px rgba(0,0,0,0.05)",
+    transition: "transform 0.3s ease",
   },
   sidebarItem: {
     cursor: "pointer",
@@ -286,6 +334,7 @@ const styles = {
     marginLeft: "220px",
     overflowY: "auto",
     minHeight: "calc(100vh - 80px)",
+    transition: "margin 0.3s ease, padding 0.3s ease",
   },
   waveContainer: {
     position: "fixed",
@@ -297,6 +346,32 @@ const styles = {
     pointerEvents: "none",
   },
   wave: { width: "100%", height: "auto", display: "block" },
+  menuBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: "50%",
+    border: "1px solid #e5e5ef",
+    background: "#fff",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+    marginRight: 12,
+    cursor: "pointer",
+  },
+  menuLine: {
+    width: 20,
+    height: 2,
+    backgroundColor: "#2e236c",
+    borderRadius: 2,
+  },
+  overlay: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(0,0,0,0.35)",
+    zIndex: 1100,
+  },
 };
 
 export default Layout;

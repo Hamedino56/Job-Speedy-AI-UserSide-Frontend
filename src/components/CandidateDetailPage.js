@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "./Layout";
 import { useLanguage } from "../contexts/LanguageContext";
+import useMediaQuery from "../hooks/useMediaQuery";
 import { apiFetch } from "../utils/api";
 
 const CandidateDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { language } = useLanguage();
+  const isMobile = useMediaQuery("(max-width: 900px)");
 
   const [candidate, setCandidate] = useState(null);
   const [applications, setApplications] = useState([]);
@@ -76,6 +78,11 @@ const CandidateDetailPage = () => {
     }
   }
 
+  const appsLayoutStyle = useMemo(() => ({
+    ...styles.appsLayout,
+    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+  }), [isMobile]);
+
   return (
     <Layout>
       <div style={styles.container}>
@@ -121,7 +128,7 @@ const CandidateDetailPage = () => {
           {applications.length === 0 ? (
             <p style={styles.noData}>{language === 'de' ? 'Keine Bewerbungen gefunden' : 'No applications found'}</p>
           ) : (
-            <div style={styles.appsLayout}>
+            <div style={appsLayoutStyle}>
               <div style={styles.appsList}>
                 <table style={styles.table}>
                   <thead>

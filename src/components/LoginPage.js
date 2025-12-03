@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import backgroundImg from "../assets/background.png";
 import waveImg from "../assets/wave.png";
 import { Link, useNavigate } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
 import { t } from "../utils/i18n";
+import useMediaQuery from "../hooks/useMediaQuery";
 import { apiFetch } from "../utils/api";
 
 const LoginPage = () => {
@@ -96,8 +97,38 @@ const LoginPage = () => {
     }
   };
 
+  const isTablet = useMediaQuery("(max-width: 1024px)");
+  const isMobile = useMediaQuery("(max-width: 640px)");
+
+  const responsive = useMemo(() => ({
+    page: {
+      ...styles.page,
+      flexDirection: isTablet ? "column" : "row",
+      minHeight: "100vh",
+      height: "auto",
+      paddingTop: isTablet ? "60px" : 0,
+    },
+    leftSection: {
+      ...styles.leftSection,
+      display: isTablet ? "none" : "flex",
+    },
+    rightSection: {
+      ...styles.rightSection,
+      flex: isTablet ? "unset" : 1,
+      width: "100%",
+      minHeight: isTablet ? "auto" : "100vh",
+      padding: isTablet ? "40px 20px 80px" : 0,
+    },
+    formBox: {
+      ...styles.formBox,
+      width: isMobile ? "100%" : isTablet ? "90%" : "350px",
+      padding: isMobile ? "30px 20px" : "40px",
+      boxShadow: isTablet ? "0 10px 30px rgba(0,0,0,0.1)" : "none",
+    },
+  }), [isTablet, isMobile]);
+
   return (
-    <div style={styles.page}>
+    <div style={responsive.page}>
       {/* Language Switcher */}
       <button 
         style={styles.languageBtn} 
@@ -108,7 +139,7 @@ const LoginPage = () => {
       </button>
 
       {/* Left Side */}
-      <div style={styles.leftSection}>
+      <div style={responsive.leftSection}>
         <div style={styles.logoText}>JOBspeedy AI</div>
         <p style={styles.quote}>
           {t(language, 'login.quote')}
@@ -116,8 +147,8 @@ const LoginPage = () => {
       </div>
 
       {/* Right Side - Login Form */}
-      <div style={styles.rightSection}>
-        <div style={styles.formBox}>
+      <div style={responsive.rightSection}>
+        <div style={responsive.formBox}>
           <h2 style={styles.formTitle}>{t(language, 'login.title')}</h2>
 
           <div style={styles.formGroup}>

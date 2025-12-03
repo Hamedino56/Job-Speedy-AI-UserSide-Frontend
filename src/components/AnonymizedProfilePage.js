@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "./Layout";
 import { useLanguage } from "../contexts/LanguageContext";
+import useMediaQuery from "../hooks/useMediaQuery";
 import { apiFetch, apiFetchRaw } from "../utils/api";
 
 const AnonymizedProfilePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { language } = useLanguage();
+  const isMobile = useMediaQuery("(max-width: 900px)");
   const [candidate, setCandidate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [skills, setSkills] = useState([]);
@@ -90,6 +92,11 @@ const AnonymizedProfilePage = () => {
     );
   }
 
+  const actionsCardStyle = useMemo(() => ({
+    ...styles.actionsCard,
+    flexDirection: isMobile ? "column" : "row",
+  }), [isMobile]);
+
   return (
     <Layout>
       <div style={styles.container}>
@@ -140,7 +147,7 @@ const AnonymizedProfilePage = () => {
         </div>
 
         {/* Action Buttons */}
-        <div style={styles.actionsCard}>
+        <div style={actionsCardStyle}>
           <button style={styles.primaryBtn} onClick={handleDownload}>
             📥 {language === 'de' ? 'PDF herunterladen' : 'Download PDF'}
           </button>
