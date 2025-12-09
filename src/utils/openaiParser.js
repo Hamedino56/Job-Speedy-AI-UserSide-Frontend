@@ -8,6 +8,9 @@ import mammoth from 'mammoth';
 import * as pdfjsLib from 'pdfjs-dist';
 import API_BASE_URL from '../config';
 
+// Pull OpenAI key from env (configure REACT_APP_OPENAI_API_KEY in Vercel)
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
+
 // PDF.js worker is now configured in src/pdfWorker.js
 // The worker is automatically configured when pdfWorker.js is imported in index.js
 // This ensures the worker uses a CDN with proper CORS support (jsdelivr instead of unpkg)
