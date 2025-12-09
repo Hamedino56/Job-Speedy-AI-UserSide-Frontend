@@ -103,14 +103,21 @@ const ApplicationPage = () => {
       const parsed = await parseResumeWithOpenAI(file, name, email, phone);
       
       console.log("Parsed resume data:", parsed);
+      console.log("Skills:", parsed.skills?.length || 0, "items");
+      console.log("Experience:", parsed.experience?.length || 0, "items");
+      console.log("Education:", parsed.education ? "Yes" : "No");
+      console.log("Classification:", parsed.classification);
       
       // Set parsed data
-      setParsed({
+      const parsedData = {
         skills: Array.isArray(parsed.skills) ? parsed.skills : [],
         experience: Array.isArray(parsed.experience) ? parsed.experience : [],
         education: parsed.education || "",
         classification: parsed.classification || { stack: "Unknown", percentage: 0, role: "Unknown Role", reasoning: "" },
-      });
+      };
+      
+      console.log("Setting parsed state with:", parsedData);
+      setParsed(parsedData);
 
       setScoreText(parsed.classification || { stack: "Unknown", percentage: 0, role: "Unknown Role", reasoning: "" });
       
@@ -136,6 +143,16 @@ const ApplicationPage = () => {
           if (applicantId) {
             setApplicantId(String(applicantId));
             localStorage.setItem("applicantId", String(applicantId));
+          }
+          
+          // Update classification if backend returns one
+          if (data.applicant?.classification) {
+            console.log("Updating classification from backend:", data.applicant.classification);
+            setParsed(prev => ({
+              ...prev,
+              classification: data.applicant.classification
+            }));
+            setScoreText(data.applicant.classification);
           }
         }
       } catch (serverError) {

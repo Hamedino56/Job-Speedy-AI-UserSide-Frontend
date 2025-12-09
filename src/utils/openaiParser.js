@@ -340,15 +340,60 @@ async function callOpenAIForParsing(text, filename) {
       throw new Error(error.error?.message || `OpenAI API error: ${response.status}`);
     }
     
-    const parsed = await response.json();
+    const responseData = await response.json();
     
     // Validate and log parsed data
-    console.log("Backend parse response:", parsed);
+    console.log("Backend parse response:", responseData);
+    
+    // Extract parsed data - backend may return { parsed: {...} } or direct object
+    const parsed = responseData.parsed || responseData;
     
     // Validate parsed data
     if (!parsed.skills) parsed.skills = [];
     if (!parsed.experience) parsed.experience = [];
     if (!parsed.education) parsed.education = "";
+    
+    // Handle contact info if present
+    if (parsed.contact) {
+      console.log("Contact info found:", parsed.contact);
+    }
+    
+    // Normalize experience data structure to match UI expectations
+    // Backend returns: { title, company, start_date, end_date, responsibilities }
+    // UI expects: { role, company, years/duration, summary }
+    if (Array.isArray(parsed.experience) && parsed.experience.length > 0) {
+      parsed.experience = parsed.experience.map(exp => ({
+        role: exp.title || exp.role || 'Experience',
+        company: exp.company || '—',
+        years: exp.years || exp.duration || (exp.start_date && exp.end_date ? `${exp.start_date} - ${exp.end_date}` : null),
+        duration: exp.duration || (exp.start_date && exp.end_date ? `${exp.start_date} - ${exp.end_date}` : null),
+        summary: exp.summary || (Array.isArray(exp.responsibilities) ? exp.responsibilities.join('. ') : exp.responsibilities) || '',
+        responsibilities: exp.responsibilities || []
+      }));
+    }
+    
+    // Normalize education data structure
+    // Backend may return array of education objects or a string
+    if (Array.isArray(parsed.education) && parsed.education.length > 0) {
+      // Convert education array to formatted string
+      parsed.education = parsed.education.map(edu => {
+        const parts = [];
+        if (edu.degree) parts.push(edu.degree);
+        if (edu.institution) parts.push(edu.institution);
+        if (edu.year) parts.push(`(${edu.year})`);
+        return parts.join(' - ');
+      }).join('; ');
+    } else if (typeof parsed.education === 'object' && parsed.education !== null) {
+      // Single education object
+      const edu = parsed.education;
+      const parts = [];
+      if (edu.degree) parts.push(edu.degree);
+      if (edu.institution) parts.push(edu.institution);
+      if (edu.year) parts.push(`(${edu.year})`);
+      parsed.education = parts.join(' - ');
+    } else if (!parsed.education) {
+      parsed.education = "";
+    }
 
     // Additional validation: Filter out skills that don't actually appear in the resume text
     if (Array.isArray(parsed.skills) && parsed.skills.length > 0) {
@@ -388,12 +433,26 @@ async function callOpenAIForParsing(text, filename) {
       // Don't add dummy skills - if OpenAI couldn't find skills, leave empty
     }
     
-    return {
+    // Ensure classification is properly formatted
+    let classification = parsed.classification || { stack: "Unknown", percentage: 0, role: "Unknown Role", reasoning: "Not classified" };
+    
+    // Validate classification structure
+    if (!classification.stack) classification.stack = "Unknown";
+    if (typeof classification.percentage !== 'number') classification.percentage = 0;
+    if (!classification.role) classification.role = "Unknown Role";
+    if (!classification.reasoning) classification.reasoning = "Not classified";
+    
+    const result = {
       skills: Array.isArray(parsed.skills) ? parsed.skills : [],
       experience: Array.isArray(parsed.experience) ? parsed.experience : [],
       education: parsed.education || "",
-      classification: parsed.classification || { stack: "Unknown", percentage: 0, role: "Unknown Role", reasoning: "Not classified" }
+      classification: classification
     };
+    
+    console.log("Final parsed result:", result);
+    console.log(`Skills count: ${result.skills.length}, Experience count: ${result.experience.length}, Education: ${result.education ? 'Yes' : 'No'}`);
+    
+    return result;
   } catch (error) {
     console.error("OpenAI parsing error:", error);
     throw new Error("Failed to parse resume with AI: " + error.message);
