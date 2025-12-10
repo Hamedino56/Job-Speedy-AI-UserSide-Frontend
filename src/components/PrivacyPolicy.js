@@ -436,10 +436,6 @@ const PrivacyPolicy = () => {
   </div>
 </div>
 
-<div class="bg-slate-100 rounded-lg p-6 border-2 border-slate-300 my-8">
-  <h1 class="text-2xl font-bold text-slate-900 mb-4">Cookie Verarbeitung</h1>
-<script id="CookieDeclaration" src="https://consent.cookiebot.com/71a48449-fe36-45dd-8872-b3491c3dd9da/cd.js" type="text/javascript" async></script>
-</div>
                     `
                   }}
                 />
