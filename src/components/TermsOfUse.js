@@ -60,7 +60,7 @@ const TermsOfUse = () => {
     <p class="font-bold text-slate-900 text-lg mb-2">Hitradio MS One Programmanbieter GmbH (Plattformbetreiber)</p>
     <p class="text-slate-700 mb-1">Alfred-Nobel-Str. 9</p>
     <p class="text-slate-700 mb-1">86156 Augsburg</p>
-    <p class="text-slate-700 mt-3">E-Mail: <a href="mailto:support@portal.jobspeedy.de" class="text-sky-600 font-medium hover:text-sky-700">support@portal.jobspeedy.de</a></p>
+    <p class="text-slate-700 mt-3">E-Mail: <a href="mailto:support.jobspeedy.de" class="text-sky-600 font-medium hover:text-sky-700">support.jobspeedy.de</a></p>
   </div>
 </div>
 
@@ -215,7 +215,7 @@ const TermsOfUse = () => {
             >
               <div className="bg-gradient-to-br from-sky-500 to-blue-600 text-white rounded-2xl shadow-lg p-5">
                 <p className="text-sm uppercase tracking-wide opacity-80">Fragen?</p>
-                <p className="text-lg font-semibold mt-1">support@portal.jobspeedy.de</p>
+                <p className="text-lg font-semibold mt-1">support.jobspeedy.de</p>
                 <p className="text-sm opacity-90">+49 821 / 486 99 516</p>
               </div>
               <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
