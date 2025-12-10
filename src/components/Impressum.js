@@ -165,13 +165,6 @@ const Impressum = () => {
   </div>
 </section>
 
-<section class="mb-8">
-  <h2 class="text-2xl font-bold text-sky-700 mt-8 mb-4 pb-2 border-b-2 border-slate-300">Bildrechte in Anzeigen und auf der Webseite</h2>
-  <div class="bg-slate-50 rounded-lg p-5 border border-slate-200">
-    <p class="text-slate-700">Mann mit Kravatte: coloures-pic / fotolia.de</p>
-  </div>
-</section>
-
 <div class="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded-r-lg my-8">
   <h2 class="text-xl font-bold text-slate-900 mb-3">Wichtiger Hinweis</h2>
   <p class="text-slate-800 leading-relaxed font-semibold">Von allen Unternehmen, die Inserate auf der Plattform schalten, erhält der Plattformbetreiber ein Entgelt. Bei der Weiterleitung an Drittunternehmen erhält der Plattformbetreiber ggf. eine Provision. Es findet keine Bevorzugung einzelner Unternehmen oder Inserate statt.</p>

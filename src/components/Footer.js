@@ -12,7 +12,7 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <h3 className="text-lg font-bold text-gray-900 mb-2">JobSpeedy AI</h3>
             <p className="text-gray-600 text-sm">
-              Empowering your recruitment journey with AI-powered job matching and career insights.
+              Dank KI-basiertem Matching bekommen Unternehmen die richtigen Talente – und Bewerber endlich Jobs, die wirklich zu ihnen passen.
             </p>
           </div>
 

@@ -24,7 +24,25 @@ const JobListingsPage = () => {
         const res = await fetch(`${API_BASE_URL}/api/jobs`);
         const data = await res.json();
         const jobs = data.jobs || data || [];
-        const types = Array.from(new Set(jobs.map(j => j.job_type).filter(Boolean)));
+
+        // Map backend job_type values to allowed German options
+        const normalizeType = (t = "") => String(t).toLowerCase().replace(/\s+/g, "");
+        const typeLabelMap = {
+          "full-time": "Vollzeit",
+          "fulltime": "Vollzeit",
+          "part-time": "Teilzeit",
+          "parttime": "Teilzeit",
+          "minijob": "Minijob",
+        };
+
+        const types = Array.from(
+          new Set(
+            jobs
+              .map((j) => j.job_type)
+              .filter(Boolean)
+              .filter((t) => typeLabelMap[normalizeType(t)])
+          )
+        );
         const categories = Array.from(new Set(jobs.map(j => j.category).filter(Boolean)));
         const locations = Array.from(new Set(jobs.map(j => j.location).filter(Boolean)));
         const languages = Array.from(new Set(jobs.map(j => j.language).filter(Boolean)));
@@ -81,7 +99,18 @@ const JobListingsPage = () => {
         </select>
         <select style={styles.select} value={type} onChange={(e)=>setType(e.target.value)}>
           <option value="">{t("All Job Types")}</option>
-          {filters.types.map((typeItem)=> (<option key={typeItem} value={typeItem}>{typeItem}</option>))}
+          {filters.types.map((typeItem)=> {
+            const normalizeType = (t = "") => String(t).toLowerCase().replace(/\s+/g, "");
+            const typeLabelMap = {
+              "full-time": "Vollzeit",
+              "fulltime": "Vollzeit",
+              "part-time": "Teilzeit",
+              "parttime": "Teilzeit",
+              "minijob": "Minijob",
+            };
+            const label = typeLabelMap[normalizeType(typeItem)] || typeItem;
+            return (<option key={typeItem} value={typeItem}>{label}</option>);
+          })}
         </select>
         <select style={styles.select} value={category} onChange={(e)=>setCategory(e.target.value)}>
           <option value="">{t("All Categories")}</option>
