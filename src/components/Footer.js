@@ -18,16 +18,16 @@ const Footer = () => {
 
           {/* Legal Links */}
           <div>
-            <h4 className="text-md font-semibold text-gray-900 mb-3">Legal</h4>
+            <h4 className="text-md font-semibold text-gray-900 mb-3">Rechtliches</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <a href="/privacy" className="text-gray-600 hover:text-[#0477BF] transition-colors">
-                  {t("Privacy Policy")}
+                  {t("Datenschutz")}
                 </a>
               </li>
               <li>
                 <a href="/terms" className="text-gray-600 hover:text-[#0477BF] transition-colors">
-                  {t("Terms of Use")}
+                  {t("Nutzungsbedingungen")}
                 </a>
               </li>
               <li>
@@ -37,7 +37,7 @@ const Footer = () => {
               </li>
               <li>
                 <a href="/ai-compliance" className="text-gray-600 hover:text-[#0477BF] transition-colors">
-                  AI Compliance
+                  KI Datenschutz
                 </a>
               </li>
             </ul>
@@ -45,7 +45,7 @@ const Footer = () => {
 
           {/* Contact */}
           <div>
-            <h4 className="text-md font-semibold text-gray-900 mb-3">Contact</h4>
+            <h4 className="text-md font-semibold text-gray-900 mb-3">Kontakt</h4>
             <ul className="space-y-2 text-sm text-gray-600">
               <li>support@jobspeedy.ai</li>
               <li>+49 821 / 486 99 516</li>

@@ -23,9 +23,9 @@ const PrivacyPolicy = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
             <div>
               <p className="inline-flex items-center gap-2 text-sm font-semibold text-sky-700 bg-sky-50 border border-sky-100 px-3 py-1 rounded-full">
-                🔒 Privacy Center
+                🔒 Datenschutz
               </p>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 mt-3">Datenschutz & Privacy Policy</h1>
+              <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 mt-3">Datenschutz</h1>
               <p className="text-slate-600 mt-2">
                 Alles, was Sie über Datenerfassung, Nutzung, Rechte und Sicherheit bei JobSpeedy AI wissen müssen.
               </p>
