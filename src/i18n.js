@@ -1,8 +1,10 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
-// Load saved language preference
-const savedLang = localStorage.getItem('i18n_language') || 'en';
+// Load saved language preference (with SSR/build safety)
+const savedLang = typeof window !== 'undefined' 
+  ? (localStorage.getItem('i18n_language') || 'en')
+  : 'en';
 
 const resources = {
   en: {

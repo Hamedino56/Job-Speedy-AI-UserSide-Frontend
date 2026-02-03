@@ -6,12 +6,14 @@ import "./index.css";
 import "./pdfWorker.js";
 
 // Ensure app starts in logged-out state per browser tab session
-try {
-  if (sessionStorage.getItem("authInit") !== "done") {
-    localStorage.removeItem("isAuthenticated");
-    sessionStorage.setItem("authInit", "done");
-  }
-} catch (_) {}
+if (typeof window !== 'undefined') {
+  try {
+    if (sessionStorage.getItem("authInit") !== "done") {
+      localStorage.removeItem("isAuthenticated");
+      sessionStorage.setItem("authInit", "done");
+    }
+  } catch (_) {}
+}
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
