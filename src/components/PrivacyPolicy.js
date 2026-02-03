@@ -386,8 +386,8 @@ const PrivacyPolicy = () => {
   </div>
 
   <div class="bg-slate-50 rounded-lg p-5 border border-slate-200">
-    <h3 class="text-xl font-semibold text-slate-800 mb-3">Datenschutzerklärung für die Nutzung von Google Web Fonts</h3>
-    <p class="text-slate-700 leading-relaxed">Diese Seite nutzt zur einheitlichen Darstellung von Schriftarten so genannte Web Fonts, die von Google bereitgestellt werden. Beim Aufruf einer Seite lädt Ihr Browser die benötigten Web Fonts in ihren Browsercache, um Texte und Schriftarten korrekt anzuzeigen. Wenn Ihr Browser Web Fonts nicht unterstützt, wird eine Standardschrift von Ihrem Computer genutzt. Weitere Informationen zu Google Web Fonts finden Sie unter <a href="http://developers.google.com/fonts/faq" rel="noopener" target="_blank" class="text-sky-600 font-medium hover:text-sky-700 underline">developers.google.com/fonts/faq</a> und in der Datenschutzerklärung von Google: <a href="http://www.google.com/policies/privacy" rel="noopener" target="_blank" class="text-sky-600 font-medium hover:text-sky-700 underline">www.google.com/policies/privacy</a></p>
+    <h3 class="text-xl font-semibold text-slate-800 mb-3">Datenschutzerklärung für die Nutzung von Web Fonts</h3>
+    <p class="text-slate-700 leading-relaxed">Diese Seite nutzt zur einheitlichen Darstellung von Schriftarten Web Fonts, die lokal auf unseren eigenen Servern gehostet werden. Beim Aufruf einer Seite lädt Ihr Browser die benötigten Web Fonts von unserem Server, um Texte und Schriftarten korrekt anzuzeigen. Es werden keine Daten an externe Dienste wie Google übertragen. Wenn Ihr Browser Web Fonts nicht unterstützt, wird eine Standardschrift von Ihrem Computer genutzt.</p>
   </div>
 
   <div class="bg-slate-50 rounded-lg p-5 border border-slate-200">
