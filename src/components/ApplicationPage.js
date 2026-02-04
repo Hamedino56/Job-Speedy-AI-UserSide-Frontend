@@ -31,7 +31,6 @@ const ApplicationPage = () => {
   });
   const [suggesting, setSuggesting] = useState(false);
   const [suggestedJobs, setSuggestedJobs] = useState([]);
-  const [scoreText, setScoreText] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [job, setJob] = useState(null);
@@ -124,8 +123,6 @@ const ApplicationPage = () => {
       
       console.log("Setting parsed state with:", parsedData);
       setParsed(parsedData);
-
-      setScoreText(parsed.classification || { stack: "Unknown", percentage: 0, role: "Unknown Role", reasoning: "" });
       
       // Also save to server (optional - for tracking)
       try {
@@ -158,7 +155,6 @@ const ApplicationPage = () => {
               ...prev,
               classification: data.applicant.classification
             }));
-            setScoreText(data.applicant.classification);
           }
         }
       } catch (serverError) {

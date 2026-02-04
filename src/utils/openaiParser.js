@@ -25,25 +25,6 @@ if (typeof window !== 'undefined') {
   console.log(`PDF.js version: ${pdfjsLib.version}`);
 }
 
-// Extract text from PDF file (browser-compatible)
-async function extractTextFromPDF(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const arrayBuffer = e.target.result;
-        // Use simple text extraction - OpenAI can handle PDFs directly
-        const text = await extractTextFromArrayBuffer(arrayBuffer);
-        resolve(text);
-      } catch (error) {
-        reject(error);
-      }
-    };
-    reader.onerror = reject;
-    reader.readAsArrayBuffer(file);
-  });
-}
-
 // Simple text extraction from PDF (basic implementation)
 async function extractTextFromArrayBuffer(arrayBuffer) {
   // OpenAI can handle PDF files directly via their API
@@ -277,7 +258,6 @@ async function extractTextFromDOC(arrayBuffer) {
     // Method 3: Try to send directly to OpenAI with base64
     console.log("DOC text extraction insufficient, trying direct OpenAI processing...");
     try {
-      const base64DOC = arrayBufferToBase64(arrayBuffer);
       // Note: OpenAI doesn't directly support DOC files, but we can try
       // For now, throw an error asking user to convert
       throw new Error("DOC file format is not well supported. Please convert to DOCX or PDF.");
@@ -459,7 +439,8 @@ async function callOpenAIForParsing(text, filename) {
   }
 }
 
-// Fallback: Extract skills from text using pattern matching
+// Fallback: Extract skills from text using pattern matching (unused - kept for potential future use)
+// eslint-disable-next-line no-unused-vars
 function extractSkillsFromText(text) {
   const commonSkills = [
     'JavaScript', 'Python', 'Java', 'React', 'Node.js', 'SQL', 'HTML', 'CSS',
@@ -940,7 +921,8 @@ async function extractTextFromPDFBuffer(arrayBuffer) {
   }
 }
 
-// Classify role based on skills and full resume content with improved accuracy and tech stack evaluation
+// Classify role based on skills and full resume content with improved accuracy and tech stack evaluation (unused - kept for potential future use)
+// eslint-disable-next-line no-unused-vars
 async function classifyRole(skills, resumeText = "") {
   if (!skills || skills.length === 0) {
     return { stack: "Unknown", percentage: 0, role: "Unknown Role", reasoning: "No skills provided" };

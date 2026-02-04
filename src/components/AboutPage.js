@@ -10,21 +10,8 @@ const pageMotion = {
   transition: { duration: 0.45 }
 };
 
-const staggerContainer = {
-  animate: {
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
-
-const fadeInUp = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 }
-};
-
 const AboutPage = () => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const isGerman = i18n.language === 'de';
 
   const content = {
