@@ -10,11 +10,22 @@ import Footer from "./Footer";
 const LandingPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [isAuth, setIsAuth] = useState(() => localStorage.getItem('isAuthenticated') === 'true');
+  const [isAuth, setIsAuth] = useState(() => {
+    try {
+      return typeof window !== 'undefined' ? (localStorage.getItem('isAuthenticated') === 'true') : false;
+    } catch (_) {
+      return false;
+    }
+  });
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
-    const onStorage = () => setIsAuth(localStorage.getItem('isAuthenticated') === 'true');
+    if (typeof window === 'undefined') return;
+    const onStorage = () => {
+      try {
+        setIsAuth(localStorage.getItem('isAuthenticated') === 'true');
+      } catch (_) {}
+    };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
   }, []);

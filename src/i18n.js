@@ -309,7 +309,11 @@ i18n
 
 // Listen for language changes and save to localStorage
 i18n.on('languageChanged', (lng) => {
-  localStorage.setItem('i18n_language', lng);
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('i18n_language', lng);
+    } catch (_) {}
+  }
 });
 
 export default i18n;

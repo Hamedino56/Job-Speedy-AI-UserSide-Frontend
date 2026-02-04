@@ -22,7 +22,13 @@ const ApplicationPage = () => {
   const [file, setFile] = useState(null);
   const [parsing, setParsing] = useState(false);
   const [parsed, setParsed] = useState(null);
-  const [applicantId, setApplicantId] = useState(() => localStorage.getItem('applicantId') || null);
+  const [applicantId, setApplicantId] = useState(() => {
+    try {
+      return typeof window !== 'undefined' ? (localStorage.getItem('applicantId') || null) : null;
+    } catch (_) {
+      return null;
+    }
+  });
   const [suggesting, setSuggesting] = useState(false);
   const [suggestedJobs, setSuggestedJobs] = useState([]);
   const [scoreText, setScoreText] = useState("");

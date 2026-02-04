@@ -6,11 +6,22 @@ import logoImg from "../assets/Jobspeedy_logo.png";
 const Navbar = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const [isAuth, setIsAuth] = useState(() => localStorage.getItem("isAuthenticated") === "true");
+  const [isAuth, setIsAuth] = useState(() => {
+    try {
+      return typeof window !== 'undefined' ? (localStorage.getItem("isAuthenticated") === "true") : false;
+    } catch (_) {
+      return false;
+    }
+  });
   const [currentLang, setCurrentLang] = useState(i18n.language);
 
   useEffect(() => {
-    const onStorage = () => setIsAuth(localStorage.getItem("isAuthenticated") === "true");
+    if (typeof window === 'undefined') return;
+    const onStorage = () => {
+      try {
+        setIsAuth(localStorage.getItem("isAuthenticated") === "true");
+      } catch (_) {}
+    };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, []);

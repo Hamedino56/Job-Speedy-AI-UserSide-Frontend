@@ -13,7 +13,13 @@ const JobDetailsPage = () => {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [isAuth, setIsAuth] = useState(() => localStorage.getItem('isAuthenticated') === 'true');
+  const [isAuth, setIsAuth] = useState(() => {
+    try {
+      return typeof window !== 'undefined' ? (localStorage.getItem('isAuthenticated') === 'true') : false;
+    } catch (_) {
+      return false;
+    }
+  });
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
